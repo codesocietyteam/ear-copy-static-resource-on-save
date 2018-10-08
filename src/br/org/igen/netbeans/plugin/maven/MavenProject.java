@@ -1,6 +1,8 @@
 package br.org.igen.netbeans.plugin.maven;
 
+import java.io.File;
 import org.netbeans.api.project.Project;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -9,6 +11,11 @@ import org.netbeans.api.project.Project;
 public interface MavenProject extends Project {
 
     public PomInfo getPomInfo();
+    
+    public default File getProjectDirectoryAsFile() {
+        return FileUtil.toFile(getProjectDirectory());
+    }
+    
     
     public default boolean isMultiModule() {
         return this instanceof MultiModuleMavenProject;

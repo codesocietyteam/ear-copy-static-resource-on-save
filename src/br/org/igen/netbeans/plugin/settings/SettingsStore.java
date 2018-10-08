@@ -1,6 +1,6 @@
 package br.org.igen.netbeans.plugin.settings;
 
-import org.netbeans.api.project.Project;
+import br.org.igen.netbeans.plugin.maven.MavenProject;
 
 /**
  *
@@ -11,6 +11,6 @@ public interface SettingsStore {
 
     public void saveSettings(Settings settings);
     
-    public Settings getSettingsFor(Project project);
+    public Settings getSettingsFor(MavenProject project);
     
 }

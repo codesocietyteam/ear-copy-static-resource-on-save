@@ -5,7 +5,7 @@ import br.org.igen.netbeans.plugin.maven.MavenProjects;
 import br.org.igen.netbeans.plugin.server.ApplicationServer;
 import br.org.igen.netbeans.plugin.server.SupportedApplicationServer;
 import java.io.File;
-import org.netbeans.api.project.Project;
+import java.util.Optional;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -16,7 +16,7 @@ import org.openide.filesystems.FileUtil;
  */
 public class Settings {
 
-    private final Project project;
+    private final MavenProject project;
     
     private boolean active;
     private FileObject earProjectDirectory;
@@ -24,11 +24,11 @@ public class Settings {
     private SupportedApplicationServer server;
     private FileObject serverDirectory;
 
-    public Settings(Project projet) {
+    public Settings(MavenProject projet) {
         this.project = projet;
     }
 
-    public Project getProject() {
+    public MavenProject getProject() {
         return project;
     }
     
@@ -68,12 +68,20 @@ public class Settings {
         return MavenProjects.getDefault().getProject(earProjectDirectory);
     }
 
-    public SupportedApplicationServer getServer() {
+    public SupportedApplicationServer getSupportedServer() {
         return server;
     }
 
-    public void setServer(SupportedApplicationServer server) {
+    public void setSupporterServer(SupportedApplicationServer server) {
         this.server = server;
+    }
+    
+    public Optional<ApplicationServer> getApplicationServer() {
+        if (server == null) {
+            return Optional.<ApplicationServer>empty();
+        }
+        
+        return Optional.ofNullable(server.getApplicationServer());
     }
 
     public FileObject getServerDirectory() {

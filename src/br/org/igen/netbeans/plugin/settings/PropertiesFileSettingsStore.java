@@ -1,5 +1,6 @@
 package br.org.igen.netbeans.plugin.settings;
 
+import br.org.igen.netbeans.plugin.maven.MavenProject;
 import br.org.igen.netbeans.plugin.server.SupportedApplicationServer;
 import java.io.File;
 import java.io.FileInputStream;
@@ -35,7 +36,7 @@ public class PropertiesFileSettingsStore implements SettingsStore {
         Properties properties = loadProperties(settings.getProject());
         properties.put("active", Boolean.toString(settings.isActive()));
         properties.put("earProject.directory", settings.getEarProjectDirectory() == null ? "" : settings.getEarProjectDirectoryAsFile().toString());
-        properties.put("applicationServer", settings.getServer() == null ? "" : settings.getServer().name());
+        properties.put("applicationServer", settings.getSupportedServer() == null ? "" : settings.getSupportedServer().name());
         properties.put("applicationServer.diretory", settings.getServerDirectory() == null ? "" : settings.getServerDirectoryAsFile().toString());
         
         File configFile = getConfigFile(settings.getProject());
@@ -50,7 +51,7 @@ public class PropertiesFileSettingsStore implements SettingsStore {
     }
     
     @Override
-    public Settings getSettingsFor(Project project) {
+    public Settings getSettingsFor(MavenProject project) {
         if (cachedSettings.containsKey(project)) {
             return cachedSettings.get(project);
         }
@@ -61,7 +62,7 @@ public class PropertiesFileSettingsStore implements SettingsStore {
         return settings;
     }
     
-    private Settings getSettingsFromPropeties(Project project) {
+    private Settings getSettingsFromPropeties(MavenProject project) {
         Properties properties = loadProperties(project);
         
         Settings settings = new Settings(project);
@@ -76,7 +77,7 @@ public class PropertiesFileSettingsStore implements SettingsStore {
         String server = properties.getProperty("applicationServer");
         
         if (server != null && !server.isEmpty()) {
-            settings.setServer(SupportedApplicationServer.valueOf(server));
+            settings.setSupporterServer(SupportedApplicationServer.valueOf(server));
         }
         
         String serverDiretory = properties.getProperty("applicationServer.diretory");

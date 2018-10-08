@@ -133,7 +133,7 @@ public class ProjectSettingPanel extends javax.swing.JPanel {
             }
         });
 
-        comboApplicationServers.setModel(new DefaultComboBoxModel<ApplicationServer>(supportedApplicationServers.toArray(new ApplicationServer[] {})));
+        comboApplicationServers.setModel(new DefaultComboBoxModel<SupportedApplicationServer>(supportedApplicationServers.toArray(new SupportedApplicationServer[] {})));
 
         javax.swing.GroupLayout panelEarModuleLayout = new javax.swing.GroupLayout(panelEarModule);
         panelEarModule.setLayout(panelEarModuleLayout);
@@ -206,7 +206,7 @@ public class ProjectSettingPanel extends javax.swing.JPanel {
         
         checkboxActivate.setSelected(settings.isActive());
         comboEarModules.setSelectedItem(settings.getEarProject());
-        comboApplicationServers.setSelectedItem(settings.getServer());
+        comboApplicationServers.setSelectedItem(settings.getSupportedServer());
         
         File serverDiretoryFile = settings.getServerDirectoryAsFile();
         textFieldApplicationServerDirectory.setText(serverDiretoryFile == null ? "" : serverDiretoryFile.toString());
@@ -238,7 +238,9 @@ public class ProjectSettingPanel extends javax.swing.JPanel {
         comboEarModules.setEnabled(isActive);
         
         if (isActive) {
-            comboEarModules.setSelectedIndex(0);
+            if (comboEarModules.getSelectedItem() == null && !earModules.isEmpty()) {
+                comboEarModules.setSelectedItem(earModules.get(0));
+            }
         } else {
             comboEarModules.setSelectedItem(null);
         }
@@ -259,7 +261,7 @@ public class ProjectSettingPanel extends javax.swing.JPanel {
             settings.setEarProjectDirectory((File) null);
         }
         
-        settings.setServer(((SupportedApplicationServer) comboApplicationServers.getSelectedItem()));
+        settings.setSupporterServer(((SupportedApplicationServer) comboApplicationServers.getSelectedItem()));
         
         String serverDirectory = textFieldApplicationServerDirectory.getText();
         
@@ -275,7 +277,7 @@ public class ProjectSettingPanel extends javax.swing.JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton botaoSelecionarArquivo;
     private javax.swing.JCheckBox checkboxActivate;
-    private javax.swing.JComboBox<ApplicationServer> comboApplicationServers;
+    private javax.swing.JComboBox<SupportedApplicationServer> comboApplicationServers;
     private javax.swing.JComboBox<MavenProject> comboEarModules;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;

@@ -8,24 +8,28 @@ import java.util.List;
  * @author gabrielhof
  * @since v1.0.0
  */
-public enum SupportedApplicationServer implements ApplicationServer {
+public enum SupportedApplicationServer {
 
     WILDFLY(new WildflyApplicationServer()),
     ;
+    
     private final ApplicationServer server;
     
     private SupportedApplicationServer(ApplicationServer server) {
         this.server = server;
     }
 
-    @Override
     public String getName() {
         return server.getName();
     }
-
+    
     @Override
     public String toString() {
-        return server.getName();
+        return getName();
+    }
+    
+    public ApplicationServer getApplicationServer() {
+        return server;
     }
 
     public static List<SupportedApplicationServer> all() {
