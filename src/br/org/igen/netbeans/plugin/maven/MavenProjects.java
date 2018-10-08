@@ -2,11 +2,16 @@ package br.org.igen.netbeans.plugin.maven;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.util.Lookup;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -15,6 +20,8 @@ import org.netbeans.api.project.ui.OpenProjects;
 public final class MavenProjects {
 
     private static MavenProjects INSTANCE;
+
+    private final MavenProjectFactory mavenProjectFactory = MavenProjectFactory.getDefault(); 
     
     private final OpenProjects openedProjects;
     
@@ -24,6 +31,44 @@ public final class MavenProjects {
     
     public void addChangeListener(MavenProjectsChangeListener listener) {
         openedProjects.addPropertyChangeListener(new MavenProjectModifiedChangeListener(listener));
+    }
+    
+    public MavenProject getCurrent() {
+        Lookup lookup = Utilities.actionsGlobalContext(); 
+        return getCurrent(lookup);
+    }
+    
+    public MavenProject getCurrent(Lookup lookup) {
+        Project project = lookup.lookup(Project.class);
+        
+        if (project != null) {
+            return mavenProjectFactory.from(project);
+        }
+        
+        DataObject dataObject = lookup.lookup(DataObject.class);
+        
+        if (dataObject == null) {
+            return null;
+        }
+        
+        return getProject(dataObject.getPrimaryFile());
+    }
+    
+    public MavenProject getProject(FileObject file) {
+        Project project = FileOwnerQuery.getOwner(file);
+        return mavenProjectFactory.from(project);
+    }
+    
+    public List<MavenProject> getOpenedProjects() {
+        return toMavenProjects(Arrays.asList(openedProjects.getOpenProjects()));
+    }
+    
+    private List<MavenProject> toMavenProjects(List<Project> projects) {
+        return projects.stream()
+                    .map(project -> mavenProjectFactory.from(project))
+                    .filter(mavenProject -> mavenProject != null)
+                    .collect(Collectors.toList());
+                    
     }
     
     public static MavenProjects getDefault() {
@@ -50,15 +95,8 @@ public final class MavenProjects {
                 return;
             }
             
-            for (Project openedProject : openedProjects) {
-                MavenProject mavenProject = MavenProjectFactory.getDefault().from(openedProject);
-
-                if (mavenProject == null) {
-                    return;
-                }
-
-                listener.projectOpened(mavenProject);
-            }
+            toMavenProjects(Arrays.asList(openedProjects))
+                    .forEach(mavenProject -> listener.projectOpened(mavenProject));
         }
     
     }

@@ -8,6 +8,8 @@ import org.netbeans.api.project.Project;
  */
 public interface MavenProject extends Project {
 
+    public PomInfo getPomInfo();
+    
     public default boolean isMultiModule() {
         return this instanceof MultiModuleMavenProject;
     }

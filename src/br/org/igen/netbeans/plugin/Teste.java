@@ -1,11 +1,9 @@
 package br.org.igen.netbeans.plugin;
 
-import br.org.igen.netbeans.plugin.maven.MavenProject;
+import br.org.igen.MagicaPanel;
+import br.org.igen.netbeans.plugin.maven.MavenModuleProject;
 import br.org.igen.netbeans.plugin.maven.MavenProjects;
-import br.org.igen.netbeans.plugin.maven.MavenProjectsChangeListener;
-import br.org.igen.netbeans.plugin.maven.SimpleMultiModuleMavenProject;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
+import br.org.igen.netbeans.plugin.maven.MultiModuleMavenProject;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -14,15 +12,12 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.xml.parsers.DocumentBuilderFactory;
-import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.ui.OpenProjects;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -31,6 +26,7 @@ import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.OnStart;
 import org.openide.util.Exceptions;
+import org.openide.util.NbPreferences;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -38,7 +34,6 @@ import org.w3c.dom.NodeList;
 /**
  *
  * @author gabrielhof
- * @since VERSION
  */
 @OnStart
 public class Teste implements Runnable {
@@ -47,48 +42,24 @@ public class Teste implements Runnable {
     
     @Override
     public void run() {
-        MavenProjects.getDefault().addChangeListener(new MavenProjectsChangeListener() {
-            @Override
-            public void projectOpened(MavenProject project) {
-                if (project.isMultiModule()) {
-                    verifyWebProjectAndAddListener(project);
-                }
+        MavenProjects.getDefault().addChangeListener(mavenProject -> {
+            if (mavenProject.isMultiModule()) {
+                verifyWebProjectAndAddListener((MultiModuleMavenProject) mavenProject);
             }
         });
     }
-
-    private void verifyWebProjectAndAddListener(Project project) {
+    
+    private void verifyWebProjectAndAddListener(MultiModuleMavenProject project) {
         ProjectInformation projectInfo = ProjectUtils.getInformation(project);
         
-        logger.log(Level.INFO, "Projeto: {0}", project);
-        logger.log(Level.INFO, "Classe Projeto: {0}", project.getClass());
-        logger.log(Level.INFO, "Projeto Pai: {0}", project.getProjectDirectory().getParent());
-        logger.log(Level.INFO, "Nome1: {0}", projectInfo.getName());
-        logger.log(Level.INFO, "Nome2: {0}", projectInfo.getDisplayName());
-        
-        FileObject pomFile = project.getProjectDirectory().getFileObject("pom.xml");
-        
-        if (pomFile == null) {
-            return;
-        }
-        
-        logger.log(Level.INFO, "Projeto Maven encontrado!");
-        
-        Enumeration<FileObject> folders = (Enumeration<FileObject>) project.getProjectDirectory().getFolders(false);
+        logger.log(Level.INFO, "Projeto Maven: {0}", projectInfo.getName());
         
         List<FileObject> warProjects = new ArrayList<>();
         List<FileObject> earProjects = new ArrayList<>();
         
-        while (folders.hasMoreElements()) {
-            FileObject folder = folders.nextElement();
-            
-            FileObject submodulePom = folder.getFileObject("pom.xml");
-            
-            if (submodulePom == null) {
-                continue;
-            }
-            
-            logger.log(Level.INFO, "Modulo encontrado: {0}", folder.getName());
+        for (MavenModuleProject module : project.getModules()) {
+            FileObject projectDirectory = module.getProjectDirectory();
+            FileObject submodulePom = projectDirectory.getFileObject("pom.xml");
             
             try (InputStream pomInputStream = submodulePom.getInputStream()) {
                 Document pomDocument = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(pomInputStream);
@@ -109,18 +80,18 @@ public class Teste implements Runnable {
                 pomPackaging = pomPackaging.trim().toLowerCase();
                 
                 if (pomPackaging.equals("war")) {
-                    warProjects.add(folder);
+                    warProjects.add(projectDirectory);
                 } else if (pomPackaging.equals("ear")) {
-                    earProjects.add(folder);
+                    earProjects.add(projectDirectory);
                 }
                 
             } catch (Exception ex) {
                 logger.log(Level.SEVERE, ex.getMessage(), ex);
             }
-            
-            for (FileObject warProject : warProjects) {
-                folder.addRecursiveListener(new TesteFileChangeListener(warProject, earProjects));
-            }
+        }
+        
+        for (FileObject warProject : warProjects) {
+            warProject.addRecursiveListener(new TesteFileChangeListener(warProject, earProjects));
         }
     }
     
@@ -260,14 +231,24 @@ public class Teste implements Runnable {
                     }
                 }
 
-                Path wildflyWarPath = Paths.get("/opt/wildfly-11.0.0.Final/standalone/deployments/" + earName + ".ear/" + warName + ".war");
+                String config = NbPreferences.forModule(MagicaPanel.class).get("blablabla", "");
+                
+                if (config.trim().isEmpty()) {
+                    config = "/opt/wildfly-11.0.0.Final/standalone/deployments/";
+                }
+                
+                Path wildflyWarPath = Paths.get(config, earName + ".ear", warName + ".war");
                 
                 if (Files.exists(wildflyWarPath)) {
-                    Path wildflyFilePath = wildflyWarPath.resolve(Paths.get(name));
-                    
-                    logger.log(Level.INFO, "Arquivo Wildfly: {0}", wildflyFilePath);
-                    return wildflyFilePath;
+                    logger.log(Level.WARNING, "Pasta do servidor de aplicação não encontrada: {0}", config);
+                    return null;
                 }
+                
+                Path wildflyFilePath = wildflyWarPath.resolve(Paths.get(name));
+
+                logger.log(Level.INFO, "Arquivo Wildfly: {0}", wildflyFilePath);
+                return wildflyFilePath;
+                
             }
             
             return null;
