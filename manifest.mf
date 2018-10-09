@@ -1,6 +1,6 @@
 Manifest-Version: 1.0
 AutoUpdate-Show-In-Client: true
-OpenIDE-Module: br.org.igen
+OpenIDE-Module: ear-copy-static-resource-on-save
 OpenIDE-Module-Localizing-Bundle: br/com/codesociety/netbeans/plugin/Bundle.properties
 OpenIDE-Module-Specification-Version: 1.0
 
