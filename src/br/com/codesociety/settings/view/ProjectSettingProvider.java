@@ -22,7 +22,7 @@ public class ProjectSettingProvider implements ProjectCustomizer.CompositeCatego
 
     @Override
     public ProjectCustomizer.Category createCategory(Lookup lkp) {
-        return ProjectCustomizer.Category.create("web-files-synchronizer", "Sincronização Web Automática", null);
+        return ProjectCustomizer.Category.create("ear-copy-static-resource-on-save", "EAR Copy Static Resource on Save", null);
     }
 
     @Override

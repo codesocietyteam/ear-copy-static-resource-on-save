@@ -1,6 +1,6 @@
 Manifest-Version: 1.0
 AutoUpdate-Show-In-Client: true
-OpenIDE-Module: ear-copy-static-resource-on-save
+OpenIDE-Module: br.com.codesociety
 OpenIDE-Module-Localizing-Bundle: br/com/codesociety/bundle/Bundle.properties
 OpenIDE-Module-Specification-Version: 1.0
 
