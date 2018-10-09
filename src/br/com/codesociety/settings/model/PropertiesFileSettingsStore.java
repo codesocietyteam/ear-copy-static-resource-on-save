@@ -23,7 +23,7 @@ import org.openide.util.Exceptions;
  */
 public class PropertiesFileSettingsStore implements SettingsStore {
 
-    private static final String CONFIG_FILE = "nbproject/private/config_666.properties";
+    private static final String CONFIG_FILE = "nbproject/private/ear-copy-static-resource-on-save.properties";
     
     private static PropertiesFileSettingsStore INSTANCE;
     
